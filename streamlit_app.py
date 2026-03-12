@@ -155,10 +155,14 @@ if st.session_state.get('itens'):
                             
                 with col_f2:
                     if 'descricaoDetalhadaItem' in df_completo.columns:
-                        desc_disp = sorted(df_completo['descricaoDetalhadaItem'].dropna().astype(str).unique())
-                        desc_sel = st.multiselect("Filtrar por Descrição Detalhada", desc_disp)
-                        if desc_sel:
-                            df_completo = df_completo[df_completo['descricaoDetalhadaItem'].isin(desc_sel)]
+                        termo_desc = st.text_input("Filtrar por Descrição Detalhada (contém)")
+                        if termo_desc.strip():
+                            df_completo = df_completo[
+                                df_completo['descricaoDetalhadaItem']
+                                .fillna('')
+                                .astype(str)
+                                .str.contains(termo_desc.strip(), case=False, na=False)
+                            ]
 
             # DataFrame de exibição: formata preços com ponto de milhar e vírgula decimal
             df_exibicao = df_completo.map(
@@ -178,10 +182,24 @@ if st.session_state.get('itens'):
 
             st.markdown("### Seleção de Colunas")
             colunas_disponiveis = df_exibicao.columns.tolist()
+            
+            colunas_padrao = [
+                "Número da Compra",
+                "Quantidade",
+                "Nº Item",
+                "Descrição Detalhada",
+                "Cód. UASG",
+                "UASG",
+                "Esfera",
+                "Data da Compra"
+            ]
+            # Filtrar colunas padrão para manter apenas as que realmente existem no resultado
+            colunas_padrao_existentes = [col for col in colunas_padrao if col in colunas_disponiveis]
+
             colunas_selecionadas = st.multiselect(
                 "Escolha quais colunas exibir na tabela e no arquivo CSV",
                 options=colunas_disponiveis,
-                default=colunas_disponiveis,
+                default=colunas_padrao_existentes if colunas_padrao_existentes else colunas_disponiveis,
                 key="seletor_colunas"
             )
 
