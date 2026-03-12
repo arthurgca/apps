@@ -18,7 +18,10 @@ Esta ferramenta acessa a **API de Dados Abertos do Compras.gov.br** e permite qu
 - Seleção de página e quantidade de itens por página
 - Feedback visual com indicador de carregamento durante a requisição
 - Exibição dos resultados em **tabela interativa** ordenável e filtrável
-- Colunas renomeadas para **português** (ex.: `precoUnitario` → `Preço Unitário (R$)`)
+- **Seleção de colunas**: o usuário pode escolher dinamicamente quais colunas deseja visualizar na tabela e baixar no CSV
+- **Filtros dinâmicos** de resultados por Esfera e Descrição Detalhada
+- Tratamento no Número da Compra (`idCompra`), removendo os 8 primeiros números para melhor visualização
+- Colunas renomeadas para **português** (ex.: `idCompra` → `Número da Compra`)
 - Exportação em **CSV com separador `;`** e encoding **UTF-8 BOM** — abre corretamente no Excel do Windows sem quebrar acentos
 - Valores numéricos formatados com vírgula decimal (padrão pt-BR), reconhecidos como números pelo Excel
 - Limpeza automática do estado entre consultas

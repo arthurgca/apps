@@ -25,7 +25,7 @@ def float_para_csv(valor):
 
 # Mapeamento de nomes de colunas da API → rótulos legíveis em português
 RENOMEAR_COLUNAS = {
-    'idCompra':                    'ID Compra',
+    'idCompra':                    'Número da Compra',
     'idItemCompra':                'ID Item',
     'forma':                       'Forma',
     'modalidade':                  'Modalidade',
@@ -139,6 +139,27 @@ if st.session_state.get('itens'):
         if isinstance(itens, list) and all(isinstance(item, dict) for item in itens):
             df_completo = pd.json_normalize(itens)
 
+            if not df_completo.empty:
+                if 'idCompra' in df_completo.columns:
+                    df_completo['idCompra'] = df_completo['idCompra'].astype(str).str[8:]
+
+                st.markdown("### Filtros")
+                col_f1, col_f2 = st.columns(2)
+                
+                with col_f1:
+                    if 'esfera' in df_completo.columns:
+                        esferas_disp = sorted(df_completo['esfera'].dropna().astype(str).unique())
+                        esferas_sel = st.multiselect("Filtrar por Esfera", esferas_disp)
+                        if esferas_sel:
+                            df_completo = df_completo[df_completo['esfera'].isin(esferas_sel)]
+                            
+                with col_f2:
+                    if 'descricaoDetalhadaItem' in df_completo.columns:
+                        desc_disp = sorted(df_completo['descricaoDetalhadaItem'].dropna().astype(str).unique())
+                        desc_sel = st.multiselect("Filtrar por Descrição Detalhada", desc_disp)
+                        if desc_sel:
+                            df_completo = df_completo[df_completo['descricaoDetalhadaItem'].isin(desc_sel)]
+
             # DataFrame de exibição: formata preços com ponto de milhar e vírgula decimal
             df_exibicao = df_completo.map(
                 lambda x: formatar_preco_reais(x) if isinstance(x, float) else x
@@ -154,6 +175,24 @@ if st.session_state.get('itens'):
                 f"Total de páginas: {st.session_state['total_paginas']} | "
                 f"Páginas restantes: {st.session_state['paginas_restantes']}"
             )
+
+            st.markdown("### Seleção de Colunas")
+            colunas_disponiveis = df_exibicao.columns.tolist()
+            colunas_selecionadas = st.multiselect(
+                "Escolha quais colunas exibir na tabela e no arquivo CSV",
+                options=colunas_disponiveis,
+                default=colunas_disponiveis,
+                key="seletor_colunas"
+            )
+
+            if not colunas_selecionadas:
+                st.warning("Nenhuma coluna selecionada. A tabela e o arquivo exportado estarão vazios.")
+                df_exibicao = pd.DataFrame()
+                df_csv = pd.DataFrame()
+            else:
+                df_exibicao = df_exibicao[colunas_selecionadas]
+                df_csv = df_csv[colunas_selecionadas]
+
             st.dataframe(df_exibicao)
 
             csv = df_csv.to_csv(sep=';', index=False).encode('utf-8-sig')
